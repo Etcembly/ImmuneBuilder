@@ -8,6 +8,13 @@
 
 ---
 
+This fork does the following:
+
+- Adds more modern `pyproject.toml`
+- Adds our build process (and removes the existing GH workflows)
+- Adds FastAPI endpoints for building nanobodies and TCRs
+
+
 ## Update 1.1.1
 The weights of TCRBuilder2 have been updated to TCRBuilder2+. See the [pre-print](https://www.biorxiv.org/content/10.1101/2024.05.20.594940v1) for more information.
 
