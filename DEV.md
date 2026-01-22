@@ -113,6 +113,30 @@ NanoBodyBuilder2 -f test.fasta -o test_nanobody.pdb -v
 ```
 
 
+## Docker builds (multi-stage)
+
+The single Dockerfile has multiple targets:
+
+- `base`: builds the conda env (Python 3.11), installs deps, and downloads weights.
+- `builder`: installs ImmuneBuilder into the env from `base`.
+- `cli`: verifies CLI installation; default cmd shows TCRBuilder2 help (this will eventually be API endpoint)
+
+Build examples:
+
+```bash
+# Base with weights baked in
+docker build -t immunebuilder-base:latest --target base .
+
+# App builder
+docker build -t immunebuilder:builder --target builder .
+
+# CLI image
+docker build -t immunebuilder:cli --target cli .
+```
+
+If you prefer to copy local weights instead of downloading during build, uncomment the `COPY ImmuneBuilder/trained_model ...` line in the `base` stage and ensure `.dockerignore` does not exclude that path.
+
+
 ## Other dev stuff
 
 Setup pre-commit hooks :angel:
