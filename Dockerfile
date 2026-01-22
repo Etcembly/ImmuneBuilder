@@ -68,7 +68,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # CLI Stage - Minimal image for CLI tools
 # Build: docker build -t immunebuilder:cli --target cli .
 ########################################
-FROM builder as cli
+FROM builder AS cli
 
 # Verify installation
 RUN TCRBuilder2 --help
