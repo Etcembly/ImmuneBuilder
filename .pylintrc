@@ -1,0 +1,7 @@
+[MESSAGES CONTROL]
+# Globally ignoring the following:
+# W1203 https://pylint.readthedocs.io/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html
+#      (OK to have f strings in logs?)
+# W1514 https://pylint.readthedocs.io/en/latest/user_guide/messages/warning/unspecified-encoding.html
+#      (OK to use unspecified encoding when reading from a file)
+disable=W1203,W1514

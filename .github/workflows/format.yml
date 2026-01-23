@@ -1,0 +1,28 @@
+# Currently just a black check call, will add more linters/tests later
+
+name: Code formatting check
+
+on:
+  pull_request:
+
+jobs:
+  black-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Upgrade pip
+        run: pip install --upgrade pip setuptools wheel
+
+      - name: Install project with dev dependencies
+        run: pip install -e .[dev]
+
+      - name: Run Black
+        # Don't run formatting over the original ImmuneBuilder code to avoid churn and problems with syncing with upstream later
+        run: black --check --exclude 'ImmuneBuilder' .

@@ -1,0 +1,37 @@
+# Model weights
+ImmuneBuilder/trained_model/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs
+outputs/
+TCRBuilder2_output/
+ABodyBuilder2_output/
+NanoBodyBuilder2_output/
+*.pdb
+*.zip
