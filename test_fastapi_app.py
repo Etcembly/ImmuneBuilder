@@ -15,6 +15,7 @@ sys.modules["pdbfixer"] = MagicMock()
 sys.modules["openmm"] = MagicMock()
 sys.modules["openmm.app"] = MagicMock()
 sys.modules["openmm.unit"] = MagicMock()
+sys.modules["anarci"] = MagicMock()
 
 from fastapi_app import _save_and_parse_fasta, handle_exceptions  # noqa: E402
 

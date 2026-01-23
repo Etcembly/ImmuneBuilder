@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip setuptools wheel
-        pip install -e .[api,dev]
+        pip install -e '.[test]'
 
     - name: Run unit tests
       run: pytest test_fastapi_app.py -v
