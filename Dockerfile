@@ -58,6 +58,7 @@ WORKDIR /app
 COPY pyproject.toml MANIFEST.in ./
 COPY ImmuneBuilder/ ./ImmuneBuilder/
 COPY data/ ./data/
+COPY fastapi_app.py ./
 
 # Install ImmuneBuilder from the repo in the existing conda env from base
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
@@ -65,13 +66,16 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 
 
 ########################################
-# CLI Stage - Minimal image for CLI tools
-# Build: docker build -t immunebuilder-cli:latest --target cli .
+# API Stage - FastAPI server
+# Build: docker build -t immunebuilder-api:latest --target api .
 ########################################
-FROM builder AS cli
+FROM builder AS api
 
-# Verify installation
-RUN TCRBuilder2 --help
+# Verify FastAPI and uvicorn are available
+RUN python -c "import fastapi; import uvicorn; print('FastAPI and uvicorn ready')"
 
-# Set default command to show help
-CMD ["TCRBuilder2", "--help"]
+# Expose API port
+EXPOSE 8000
+
+# Run FastAPI server
+CMD ["uvicorn", "fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]
