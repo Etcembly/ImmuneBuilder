@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip setuptools wheel
-        pip install -e .[all]
+        pip install pytest pytest-asyncio fastapi python-multipart
 
     - name: Run unit tests
       run: pytest test_fastapi_app.py -v
