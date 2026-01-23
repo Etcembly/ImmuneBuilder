@@ -16,7 +16,7 @@ repos:
   # Format all the things
   # This sometimes has a fight with isort so we run this one second
   - repo: https://github.com/psf/black
-    rev: 25.1.0  # match copilot_public/requirements.dev.txt
+    rev: 26.1.0  # match pyproject.toml
     hooks:
       - id: black
         language_version: python3.11
