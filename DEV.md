@@ -112,6 +112,30 @@ QVQLVESGGGLVQPGESLRLSCAASGSIFGIYAVHWFRMAPGKEREFTAGFGSHGSTNYAASVKGRFTMSRDNAKNTTYL
 NanoBodyBuilder2 -f test.fasta -o test_nanobody.pdb -v
 ```
 
+## Running the FastAPI server locally
+
+FastAPI app lives in `fastapi_app.py`.
+
+Run locally with auto-reload:
+
+```bash
+uvicorn fastapi_app:app --reload --host 0.0.0.0 --port 8000
+```
+
+Endpoints:
+- Health: http://localhost:8000/health
+- Docs (Swagger): http://localhost:8000/docs
+- TCR prediction: POST http://localhost:8000/predict/tcr (form field `fasta_file`)
+- Nanobody prediction: POST http://localhost:8000/predict/nanobody (form field `fasta_file`)
+
+Example curl:
+
+```bash
+curl -X POST "http://localhost:8000/predict/tcr" \
+	-F "fasta_file=@example_data/tcr.fasta" \
+	-o tcr_structure.pdb
+```
+
 
 ## Docker builds (multi-stage)
 
@@ -128,14 +152,42 @@ Build examples:
 docker build -t immunebuilder-base:latest --target base .
 
 # App builder
-docker build -t immunebuilder:builder --target builder .
+docker build -t immunebuilder-builder:latest --target builder .
 
 # CLI image
-docker build -t immunebuilder:cli --target cli .
+docker build -t immunebuilder-api:latest --target api .
 ```
 
 If you prefer to copy local weights instead of downloading during build, uncomment the `COPY ImmuneBuilder/trained_model ...` line in the `base` stage and ensure `.dockerignore` does not exclude that path.
 
+
+## Hitting the docker build
+
+Run the API container:
+
+```bash
+docker run -p 8000:8000 immunebuilder-api:latest
+```
+
+Then:
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Swagger docs
+open http://localhost:8000/docs
+
+# TCR prediction
+curl -X POST "http://localhost:8000/predict/tcr" \
+  -F "fasta_file=@example_data/tcr.fasta" \
+  -o tcr_structure.pdb
+
+# Nanobody prediction
+curl -X POST "http://localhost:8000/predict/nanobody" \
+  -F "fasta_file=@example_data/nanobody.fasta" \
+  -o nanobody_structure.pdb
+```
 
 ## Other dev stuff
 
