@@ -3,13 +3,20 @@ Unit tests for fastapi_app.py helper functions
 """
 
 import os
+import sys
 import tempfile
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException, UploadFile
 
-from fastapi_app import _save_and_parse_fasta, handle_exceptions
+# Mock heavy dependencies before importing ImmuneBuilder
+sys.modules["pdbfixer"] = MagicMock()
+sys.modules["openmm"] = MagicMock()
+sys.modules["openmm.app"] = MagicMock()
+sys.modules["openmm.unit"] = MagicMock()
+
+from fastapi_app import _save_and_parse_fasta, handle_exceptions  # noqa: E402
 
 
 class TestHandleExceptions:
