@@ -17,11 +17,13 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: 'pyproject.toml'
 
     - name: Install dependencies
       run: |
-        pip install pytest pytest-asyncio
-        pip install fastapi python-multipart
+        pip install --upgrade pip setuptools wheel
+        pip install -e .[all]
 
     - name: Run unit tests
       run: pytest test_fastapi_app.py -v
