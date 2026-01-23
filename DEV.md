@@ -113,28 +113,53 @@ NanoBodyBuilder2 -f test.fasta -o test_nanobody.pdb -v
 ```
 
 
-## Docker builds (multi-stage)
+## Docker builds
 
-The single Dockerfile has multiple targets:
+There are two separate Dockerfiles:
 
-- `base`: builds the conda env (Python 3.11), installs deps, and downloads weights.
-- `builder`: installs ImmuneBuilder into the env from `base`.
-- `cli`: verifies CLI installation; default cmd shows TCRBuilder2 help (this will eventually be API endpoint)
+### 1. Build the base image (conda env + model weights)
 
-Build examples:
+`Dockerfile.base` creates a reusable base image with all system dependencies, conda environment, and pre-downloaded model weights.
+
+Build and push to GCP Artifact Registry (NOT done in GitHub actions):
 
 ```bash
-# Base with weights baked in
-docker build -t immunebuilder-base:latest --target base .
-
-# App builder
-docker build -t immunebuilder:builder --target builder .
-
-# CLI image
-docker build -t immunebuilder:cli --target cli .
+VERSION=1.0
+docker build -t immunebuilder-base:${VERSION} -f Dockerfile.base .
+docker tag immunebuilder-base:${VERSION} europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder-base:${VERSION}
+docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder-base:${VERSION}
 ```
 
-If you prefer to copy local weights instead of downloading during build, uncomment the `COPY ImmuneBuilder/trained_model ...` line in the `base` stage and ensure `.dockerignore` does not exclude that path.
+### 2. Build the API image (uses base image)
+
+`Dockerfile` builds from the base image and adds the FastAPI application.
+
+Build locally:
+
+```bash
+# Use latest base image
+docker build -t immunebuilder:latest .
+
+# Or use a specific version
+VERSION=1.0
+docker build -t immunebuilder:${VERSION} --build-arg VERSION=${VERSION} .
+```
+
+Build and push to GCP Artifact Registry (done in GitHub Actions too eventually):
+
+```bash
+VERSION=1.0
+
+# Build with latest tag and --build-arg for base image version
+docker build \
+  --build-arg VERSION=${VERSION} \
+  -t europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:latest \
+  .
+
+# Push both tags
+docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:latest
+docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:${VERSION}
+```
 
 
 ## Other dev stuff
