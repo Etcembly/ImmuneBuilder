@@ -8,15 +8,16 @@ WORKDIR /app
 
 # Copy package files (weights come from base image)
 COPY pyproject.toml MANIFEST.in ./
-COPY ImmuneBuilder/ ./ImmuneBuilder/
+COPY ImmuneBuilder/*.py ./ImmuneBuilder/
 COPY data/ ./data/
+COPY fastapi_app.py ./
 
 # Install ImmuneBuilder and API dependencies from the repo
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -e '.[all]'
+    pip install --no-cache-dir -e .
 
-# Verify installation - this will eventually be an API endpoint
-RUN TCRBuilder2 --help
+# Expose API port
+EXPOSE 8000
 
-# Set default command to show help
-CMD ["TCRBuilder2", "--help"]
+# Run FastAPI server
+CMD ["uvicorn", "fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]

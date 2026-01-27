@@ -112,6 +112,30 @@ QVQLVESGGGLVQPGESLRLSCAASGSIFGIYAVHWFRMAPGKEREFTAGFGSHGSTNYAASVKGRFTMSRDNAKNTTYL
 NanoBodyBuilder2 -f test.fasta -o test_nanobody.pdb -v
 ```
 
+## Running the FastAPI server locally
+
+FastAPI app lives in `fastapi_app.py`.
+
+Run locally with auto-reload:
+
+```bash
+uvicorn fastapi_app:app --reload --host 0.0.0.0 --port 8000
+```
+
+Endpoints:
+- Health: http://localhost:8000/health
+- Docs (Swagger): http://localhost:8000/docs
+- TCR prediction: POST http://localhost:8000/predict/tcr (form field `fasta_file`)
+- Nanobody prediction: POST http://localhost:8000/predict/nanobody (form field `fasta_file`)
+
+Example curl:
+
+```bash
+curl -X POST "http://localhost:8000/predict/tcr" \
+	-F "fasta_file=@example_data/tcr.fasta" \
+	-o tcr_structure.pdb
+```
+
 
 ## Docker builds
 
@@ -161,6 +185,34 @@ docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:la
 docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:${VERSION}
 ```
 
+
+## Hitting the docker build
+
+Run the API container:
+
+```bash
+docker run -p 8000:8000 immunebuilder:latest
+```
+
+Then:
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Swagger docs
+open http://localhost:8000/docs
+
+# TCR prediction
+curl -X POST "http://localhost:8000/predict/tcr" \
+  -F "fasta_file=@example_data/tcr.fasta" \
+  -o tcr_structure.pdb
+
+# Nanobody prediction
+curl -X POST "http://localhost:8000/predict/nanobody" \
+  -F "fasta_file=@example_data/nanobody.fasta" \
+  -o nanobody_structure.pdb
+```
 
 ## Other dev stuff
 
