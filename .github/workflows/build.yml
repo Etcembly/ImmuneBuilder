@@ -1,0 +1,79 @@
+name: Build and push image to Artifact Registry
+
+on:
+  push:
+    branches:
+      - main
+      - annarailton/add-build-workflow
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, ganymede]
+    env:
+      DOCKER_BUILDKIT: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get gcloud version
+        run: gcloud version
+
+      - name: Login to GCP Artifact Registry
+        env:
+          GCP_PROJECT_ID: emly-copilot-ci
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > key.json
+          gcloud auth activate-service-account --key-file=key.json
+          gcloud config set project $GCP_PROJECT_ID
+          gcloud auth configure-docker europe-west2-docker.pkg.dev --quiet
+          rm key.json
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::735045503862:role/github-actions-ecr
+          aws-region: eu-west-2
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get branch name and repo short SHA hash
+        id: vars
+        run: |
+          BRANCH=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
+          echo "SHORT_SHA_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: |
+          docker build \
+          --build-arg VERSION=latest \
+          -t europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:latest \
+          -t europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:${{ steps.vars.outputs.BRANCH }} \
+          -t europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:${{ steps.vars.outputs.SHORT_SHA_HASH }} \
+          -t 735045503862.dkr.ecr.eu-west-2.amazonaws.com/immunebuilder:latest \
+          -t 735045503862.dkr.ecr.eu-west-2.amazonaws.com/immunebuilder:${{ steps.vars.outputs.BRANCH }} \
+          -t 735045503862.dkr.ecr.eu-west-2.amazonaws.com/immunebuilder:${{ steps.vars.outputs.SHORT_SHA_HASH }} \
+          .
+
+      - name: Push Docker image
+        run: |
+          docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:latest
+          docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:${{ steps.vars.outputs.BRANCH }}
+          docker push europe-west2-docker.pkg.dev/emly-copilot-ci/copilot/immunebuilder:${{ steps.vars.outputs.SHORT_SHA_HASH }}
+          docker push 735045503862.dkr.ecr.eu-west-2.amazonaws.com/immunebuilder:latest
+          docker push 735045503862.dkr.ecr.eu-west-2.amazonaws.com/immunebuilder:${{ steps.vars.outputs.BRANCH }}
+          docker push 735045503862.dkr.ecr.eu-west-2.amazonaws.com/immunebuilder:${{ steps.vars.outputs.SHORT_SHA_HASH }}
